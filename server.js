@@ -6,11 +6,13 @@ console.log('[%s]\nSystem started. Initializing system parameters.', new Date())
 
 var express = require('express');
 var MongoStore = require('connect-mongo')(express);
-var Mongodb = require('mongodb');
+var Db = require('./lib/Db.js');
 var FS = require('fs');
 var app = module.exports = express();
 var pkg = require('./package');
 var routes = require('./routes');
+
+app.db = new Db();
 
 //parseHtml('layout');
 //parseHtml('idnlayout');
@@ -44,5 +46,5 @@ for (var i = 0; i < routes.length; i++) {
 }
 
 app.listen(process.env.VCAP_APP_PORT || 80, function(){
-  console.log("SFEI Systems operating on port %d in %s mode. [%s]",process.env.VCAP_APP_PORT || 80, app.settings.env, new Date());
+  console.log("[%s]\nSFEI Systems operating on port %d in %s mode. ",process.env.VCAP_APP_PORT || 80, app.settings.env, new Date());
 });
