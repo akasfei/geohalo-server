@@ -1,0 +1,13 @@
+[
+  {
+    "id": "gh_username",
+    "label": "Username",
+    "horizontal": true
+  },
+  {
+    "id": "gh_password",
+    "type": "password",
+    "label": "Password",
+    "horizontal": true
+  }
+]
