@@ -5,16 +5,21 @@
 </div>
 
 <div class="container">
-  <div class="row">
-    <form class="col-md-4 col-md-offset-4">
-      {{#each login-form}}
-        {{form-group}}
-      {{/each}}
-      <div class="row">
-        <div class="col-md-10 col-md-offset-2">
-          <a href="#" class="btn btn-primary">Login</a> <a href="register.html" class="btn btn-default">Register</a>
+  <div class="row login-form active">
+    <div class="col-md-6 col-md-offset-3">
+      <form role="form" class="form-horizontal">
+        {{#each login-form}}
+          {{> form-group}}
+        {{/each}}
+        <div class="row">
+          <div class="col-md-10 col-md-offset-2">
+            <a href="#" class="btn btn-primary btn-login">Login</a> <a href="register.html" class="btn btn-default">Register</a>
+          </div>
         </div>
-      </div>
-    </form>
+      </form>
+    </div>
+  </div>
+  <div class="row user-stats">
+    
   </div>
 </div>

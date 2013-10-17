@@ -1,7 +1,8 @@
 [
   {
-    "id": "gh_username",
-    "label": "Username",
+    "id": "gh_email",
+    "label": "Email",
+    "type": "email",
     "horizontal": true
   },
   {
