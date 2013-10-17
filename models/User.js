@@ -3,7 +3,7 @@ var Db = require('../lib/Db.js');
 var db = new Db();
 
 function User (instance){
-  if (typeof instance === 'undefined')
+  if (typeof instance === 'undefined' || typeof instance._id === 'undefined')
     return null;
   for (prop in instance)
     this[prop] = instance[prop];
@@ -25,7 +25,7 @@ User.prototype.retrieveLocation = function() {
       return console.log(err);
     if (typeof docs === 'undefined' || docs.length < 1)
       return;
-    this.location = new Location(location, this._id);
+    this.location = new Location(docs[0], this._id);
   });
 };
 
@@ -36,7 +36,7 @@ User.prototype.updateLocation = function(location, callback) {
     this.location.update(location, callback);
 };
 
-User.prototype.search = function(radius, activity) {
+User.prototype.search = function(options) {
   // body...
 };
 

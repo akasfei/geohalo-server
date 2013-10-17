@@ -13,6 +13,7 @@ var pkg = require('./package');
 var routes = require('./routes');
 
 app.db = new Db();
+app.db.init();
 
 //parseHtml('layout');
 //parseHtml('idnlayout');
@@ -46,5 +47,5 @@ for (var i = 0; i < routes.length; i++) {
 }
 
 app.listen(process.env.VCAP_APP_PORT || 80, function(){
-  console.log("[%s]\nSFEI Systems operating on port %d in %s mode. ",process.env.VCAP_APP_PORT || 80, app.settings.env, new Date());
+  console.log("[%s]\nSFEI Systems operating on port %d in %s mode. ", new Date(), process.env.VCAP_APP_PORT || 80, app.settings.env);
 });
