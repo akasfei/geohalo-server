@@ -12,7 +12,7 @@
    var ExBuffer = require('ByteBuffer');
    var exbuffer = new ExBuffer().ushortHead().bigEndian();
    
-   # so how to dealing with java code? There is no ExBuffer jar file.
+   # so how to deal with java code? There is no ExBuffer jar file.
     
 2. event_type
     
