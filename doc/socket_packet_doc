@@ -1,11 +1,18 @@
 1. base socket packet structure.
 
-    ------------------------------------------------------------------
-    | 2 byte #packet_size | 1 byte #event_type | * byte #packet_data |
-    ------------------------------------------------------------------
-    
-    ps: It's it too large for a packet to use 4 byte integer as header.
-        Is there any condition that we need to seed 4 bilion byte data?
+   #------------------------------------------------------------------
+   #| 2 byte #packet_size | 1 byte #event_type | * byte #packet_data |
+   #------------------------------------------------------------------
+
+   #ps: It's it too large for a packet to use 4 byte integer as header.
+   #Is there any condition that we need to seed 4 bilion byte data?
+   
+   use ExBuffer & ByteBuffer.
+   
+   var ExBuffer = require('ByteBuffer');
+   var exbuffer = new ExBuffer().ushortHead().bigEndian();
+   
+   # so how to dealing with java code? There is no ExBuffer jar file.
     
 2. event_type
     
