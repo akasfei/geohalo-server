@@ -15,7 +15,7 @@
 
     EVENT_MESSAGE_SEND   # message send from client to server.
     
-    EVENT_HEART_PACKET   # make connection alive.
+    EVENT_HEART_PACKET   # keep connection alive.
                          
     EVENT_RECIEVED       # client (or server) send signal packet to 
                          # server (or client) that packet is recieved.
