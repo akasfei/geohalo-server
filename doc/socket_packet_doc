@@ -54,7 +54,13 @@
     
 5. recieved_packet_data structure
     
-    None.
+    #mid
+    
+    {
+         from_id: from_id,
+         to_id: to_id,
+         send_time: send_time
+    }
     
 6. lost_packet_data structure
     
