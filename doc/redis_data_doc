@@ -1,8 +1,11 @@
-1.inbox.
+1.inbox. (hashmap)
   Every online user has a inbox in redis. The key of inbox is user's uid. Inbox store incoming unread messages as a list.
   Inbox was created when server receive online signal. And insert inbox data into mongodb when user is offline. Messages
   that has been read will be remove from inbox and insert to mongodb.
- 
-2.message
+  
+  key: useid
+  value: message (key-value-set)
+
+2.message (hashmap)
   key: {from_uid, to_uid, send_time}
   value: message_content
