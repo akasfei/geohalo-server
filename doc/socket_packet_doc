@@ -16,11 +16,14 @@
     
 2. event_type
     
-    EVENT_ONLINE         # client connect to server. user online.
+    EVENT_ONLINE         # client connect to server. server check username & password,
+                         # if correct. generate token and send back to. user online.
     
     EVENT_OFFLINE        # client disconnect. user offline.
 
     EVENT_MESSAGE_SEND   # message send from client to server.
+                         # 1.Check token and user. if corrent put message to to_id inbox
+                         #   send back login_success_packet (contain token info etc)
     
     EVENT_HEART_PACKET   # keep connection alive.
                          
@@ -53,3 +56,8 @@
 6. lost_packet_data structure
     
     None.
+7. online_packet
+   {
+      username: username,
+      password: password
+   }
