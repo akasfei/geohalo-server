@@ -1,4 +1,4 @@
-var Location = require('./Location.js');
+var Status = require('./Status.js');
 var Db = require('../lib/Db.js');
 var db = new Db();
 
@@ -11,29 +11,21 @@ function User (instance){
   return this;
 };
 
-User.prototype.retrieveActivity = function() {
-  // body...
-};
-
-User.prototype.updateActivity = function(activity) {
-  // body...
-};
-
-User.prototype.retrieveLocation = function() {
-  db.find({'usrID': this._id}, 'location', {'limit': 1}, function (err, docs) {
+User.prototype.retrieveStatus = function() {
+  db.find({'usrID': this.email}, 'status', {'limit': 1}, function (err, docs) {
     if (err)
       return console.log(err);
     if (typeof docs === 'undefined' || docs.length < 1)
       return;
-    this.location = new Location(docs[0], this._id);
+    this.status = new Status(this.email, docs[0]);
   });
 };
 
-User.prototype.updateLocation = function(location, callback) {
-  if (typeof this.location === 'undefined')
-    this.location = new Location(location, this._id).store(callback);
+User.prototype.updateStatus = function(status, callback) {
+  if (typeof this.status === 'undefined')
+    this.status = new Status(this.email, status).store(callback);
   else
-    this.location.update(location, callback);
+    this.status.update(status, callback);
 };
 
 User.prototype.search = function(options) {
