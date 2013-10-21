@@ -1,0 +1,72 @@
+1. base socket packet structure.
+
+   #------------------------------------------------------------------
+   #| 2 byte #packet_size | 1 byte #event_type | * byte #packet_data |
+   #------------------------------------------------------------------
+
+   #ps: It's it too large for a packet to use 4 byte integer as header.
+   #Is there any condition that we need to seed 4 bilion byte data?
+   
+   use ExBuffer & ByteBuffer.
+   
+   var ExBuffer = require('ByteBuffer');
+   var exbuffer = new ExBuffer().ushortHead().bigEndian();
+   
+   # so how to deal with java code? There is no ExBuffer jar file.
+    
+2. event_type
+    
+    EVENT_ONLINE         # client connect to server. server check username & password,
+                         # if correct. generate token and send back to. user online.
+    
+    EVENT_OFFLINE        # client disconnect. user offline.
+
+    EVENT_MESSAGE_SEND   # message send from client to server.
+                         # 1.Check token and user. if corrent put message to to_id inbox
+                         #   send back login_success_packet (contain token info etc)
+    
+    EVENT_HEART_PACKET   # keep connection alive.
+                         
+    EVENT_RECIEVED       # client (or server) send signal packet to 
+                         # server (or client) that packet is recieved.
+                         
+    EVENT_LOST           # client (or server) send signal packet to 
+                         # server (or client) that packet is lost,
+                         # sever (or client) should resend data packet.
+            
+    EVENT_MESSAGE_PUSH   # server push message packet to client.
+    
+3. message_send_packet_data structure
+    
+    {
+        mid:
+            {
+                from_id: from_id,
+                to_id: to_id,
+                send_time: send_time
+            },
+        message: message
+    }
+    
+4. heart_packet_data structure
+    
+    None.
+    
+5. recieved_packet_data structure
+    
+    #mid
+    
+    {
+         from_id: from_id,
+         to_id: to_id,
+         send_time: send_time
+    }
+    
+6. lost_packet_data structure
+    
+    None.
+7. online_packet
+   {
+      username: username,
+      password: password
+   }
