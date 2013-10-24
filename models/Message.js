@@ -2,12 +2,20 @@ var manager   = require('../lib/ConnectionManager.js');
 var redis_cli = require('./lib/RedisDB.js').client;
 var util      = require('util');
 var Packer    = require('./lib/BufferPacker.js');
+var async     = require('node-async');
 
-function Message (fromID, toID, sendTime, msgContent) {
-  this.fromID     = fromID;
-  this.toID       = toID;
-  this.sendTime   = sendTime;
-  this.msgContent = msgContent;
+/**
+ * Constructor of Message Model. if message is newly
+ * send from client and have no msgId, just leave it
+ * blank. Redis will generate a msgId for it when 
+ * save.
+ */
+function Message (fromID, toID, sendTime, msg, msgId) {
+  this.fromID   = fromID;
+  this.toID     = toID;
+  this.sendTime = sendTime;
+  this.msg      = msg;
+  this.msgId    = msgId;
 };
 
 /**
@@ -23,7 +31,6 @@ Message.prototype.forward = function(callback) {
     console.log (this.toID + ' is offline');
     return;
   }
-
   var buffer = Packer.pack (Packer.S2C_PackType_Msg, this);
   socket.write (buffer);
 };
@@ -34,48 +41,85 @@ Message.prototype.forward = function(callback) {
  * @return 
  */ 
 Message.prototype.save = function(callback) {
-  var hkey  = util.format ('user:%s:msg_box', this.toID);
-  var lkey  = util.format ('user:%s:msg_unread', this.toID);
+  var unreadkey = util.format ('user:%s:msg.unread', this.toID);
+  var nextIdKey = util.format ('user:%s:msg.nextId', this.toID);
+  var msgBoxKey = util.format ('user:%s:msgbox', this.toID);
 
-  redis_cli.hget (hkey, 'nextMsgId', function (err, nextMsgId) {
-  	// the first time user receive msg.
-  	if (nextMsgId == null) {
-      this.msgId = 0;
-  	} else {
+  // if msg have no msgId. generate one.else just save it.
+  if (this.msgId == undefined) {
+    redis_cli.incr (nextIdKey, function (err, nextMsgId) {
       this.msgId = nextMsgId;
-    }
 
-  	var msgKeyPrefix  = util.format ('msg:%s:', this.msgId);
-  	var fromKey       = msgKeyPrefix + 'fromID';
-  	var sendTimeKey   = msgKeyPrefix + 'sendTime';
-  	var msgContentKey = msgKeyPrefix + 'msgContent';
-
-    redis_cli.hmset(hkey,
-      fromKey,       this.fromID, // hahaha,
-      sendTimeKey,   this.sendTime,
-      msgContentKey, this.msgContent,
-      function (err, result) {
-        if (err == null && result == 'OK') {
-          redis_cli.hincrby (hkey, 'nextMsgId', 1);
-          redis_cli.lpush(lkey, this.msgId);
+      var objstr = JSON.stringify (this);
+      var multi  = redis_cli.multi();
+      multi.hset (msgBoxKey, this.msgId, objstr);
+      multi.sadd (unreadkey, this.msgId);
+      multi.exec (function (err, replies) {
+        if (err)
+          return console.log ('insert msg error ' + err);
+        else 
           this.forward();
-        } else {
-          console.log ('save message error');
-        }
       });
+    });
+  } else { // 
+    var objstr = JSON.stringify (this);
+    var multi = redis_cli.multi();
+    multi.hset (this.msgBoxKey, this.msgId, objstr);
+    multi.sadd (unreadkey, this.msgId);
+    multi.exec (function (err, replies) {
+      if (err)
+        return console.error ('save msg failed ' + err);
+      else 
+        return console.error ('msg saved ');
+    });
+  }
+};
+
+/**
+ * send unread message to user, call when user online.
+ * @param userid.
+ * @return 
+ */
+Message.prototype.sendUnreadMsg = function (userID) {
+  // body...
+  var hkey  = util.format ('user:%s:msgbox', userID);
+  var skey  = util.format ('user:%s:msg.unread', userID);
+  var msgIdArray = new Array();
+
+  redis_cli.smembers (skey, function (err, members) {
+    if (err) {
+      console.error ('get ' + lkey + ' len error, ' + err);
+      return;
+    } else {
+      async.each (members, msgId, function(err) {
+        if (err) {
+          console.log ('async for ech error ' + err);
+          return;
+        }
+        redis_cli.hget (hkey, msgId, function (err, objstr) {
+          var msg = JSON.parse (objstr);
+          Message.forward.call(msg);
+        });
+      });
+    }
   });
 };
 
 /**
- * get unread message of user.
- * @param userid, callback(err, msg_array_obj)
- * @return 
+ * move message from unread sets to read sets.
+ * @param userID, msgId (key)
+ *
  */
-Message.prototype.getUnreadByUserID = function(userID, callback) {
-  // body...
-  var hkey  = util.format ('user:%s:msg_box', userID);
-  var lkey  = util.format ('user:%s:msg_unread', userID);
-  var msgIdArray = new Array();
+Message.prototype.setRead = function (userId, msgId) {
+  var unreadkey = util.format ('user:%s:msg.unread', userId);
+  var readkey   = util.format ('user:%s:msg.read', userId);
+  redis_cli.sismember(unreadkey, msgId, function (err, result) {
+    if (result) {
+      redis_cli.smove(unreadkey, readkey, msgId);
+    } else {
+      console.log ('user ' + userId + ' msgId ' + msgId + 'is read');
+    }
+  });
+}
 
-  // TODO
-};
+module.exports = Message;
