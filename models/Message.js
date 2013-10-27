@@ -1,7 +1,7 @@
 var manager   = require('../lib/ConnectionManager.js');
-var redis_cli = require('./lib/RedisDB.js').client;
+var redis_cli = require('../lib/RedisDB.js').client;
 var util      = require('util');
-var Packer    = require('./lib/BufferPacker.js');
+var Packer    = require('../lib/BufferPacker.js');
 var async     = require('node-async');
 
 /**
