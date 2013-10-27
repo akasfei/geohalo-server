@@ -147,7 +147,7 @@ function BufferPacker () {
         break;
 
       case this.C2S_PackType_Msg:
-        checkJsonFormatAndField(buffer, ['toID', 'sendTime', 'msg'], callback);
+        checkJsonFormatAndField(buffer, ['fromID', 'toID', 'sendTime', 'msg'], callback);
         break;   
 
       case this.C2S_PackType_Online:
@@ -162,14 +162,6 @@ function BufferPacker () {
         checkJsonFormatAndField(buffer, ['code'], callback);
         break;
 
-      case this.S2C_PackType_replyMsg:
-        checkJsonFormatAndField(buffer, ['toID', 'sendTime'], callback);
-        break;
-
-      case this.S2C_PackType_Msg:
-        checkJsonFormatAndField(buffer, ['fromID', 'sendTime', 'msg'], callback);
-        break;
-        
       default:
         var error = new Error('unkown packet type');
         callback (error, null);
@@ -187,10 +179,13 @@ function checkJsonFormatAndField(data, fieldArray, callback){
   try{
     var obj = JSON.parse(body);
   }catch(e){
+    console.log(e+":json解析失败，packet type:"+type+";body:"+body.toString());
     return callback(e, null);
   }
   for(var field in fieldArray){
     if(!obj.hasOwnProperty(fieldArray[field])){
+      var error = new Error("json缺少字段:"+fieldArray[field]+"，packet type:"+type+";body:"+body.toString());
+      console.log(error);
       return callback(error, null);
     }
   }

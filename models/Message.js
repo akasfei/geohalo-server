@@ -2,7 +2,7 @@ var manager   = require('../lib/ConnectionManager.js');
 var redis_cli = require('../lib/RedisDB.js').client;
 var util      = require('util');
 var Packer    = require('../lib/BufferPacker.js');
-var async     = require('node-async');
+var async     = require('async');
 
 /**
  * Constructor of Message Model. if message is newly
@@ -40,32 +40,32 @@ Message.prototype.forward = function(callback) {
  * @param callback
  * @return 
  */ 
-Message.prototype.save = function(callback) {
-  var unreadkey = util.format ('user:%s:msg.unread', this.toID);
-  var nextIdKey = util.format ('user:%s:msg.nextId', this.toID);
-  var msgBoxKey = util.format ('user:%s:msgbox', this.toID);
+Message.prototype.save = function(msg, callback) {
+  var unreadkey = util.format ('user:%s:msg.unread', msg.toID);
+  var nextIdKey = util.format ('user:%s:msg.nextId', msg.toID);
+  var msgBoxKey = util.format ('user:%s:msgbox', msg.toID);
 
   // if msg have no msgId. generate one.else just save it.
-  if (this.msgId == undefined) {
+  if (msg.msgId == undefined) {
     redis_cli.incr (nextIdKey, function (err, nextMsgId) {
-      this.msgId = nextMsgId;
+      msg.msgId = nextMsgId;
 
-      var objstr = JSON.stringify (this);
+      var objstr = JSON.stringify (msg);
       var multi  = redis_cli.multi();
-      multi.hset (msgBoxKey, this.msgId, objstr);
-      multi.sadd (unreadkey, this.msgId);
+      multi.hset (msgBoxKey, msg.msgId, objstr);
+      multi.sadd (unreadkey, msg.msgId);
       multi.exec (function (err, replies) {
         if (err)
           return console.log ('insert msg error ' + err);
         else 
-          this.forward();
+          Message.prototype.forward.call(msg);
       });
     });
   } else { // 
-    var objstr = JSON.stringify (this);
+    var objstr = JSON.stringify (msg);
     var multi = redis_cli.multi();
-    multi.hset (this.msgBoxKey, this.msgId, objstr);
-    multi.sadd (unreadkey, this.msgId);
+    multi.hset (msgBoxKey, msg.msgId, objstr);
+    multi.sadd (unreadkey, msg.msgId);
     multi.exec (function (err, replies) {
       if (err)
         return console.error ('save msg failed ' + err);
@@ -84,22 +84,23 @@ Message.prototype.sendUnreadMsg = function (userID) {
   // body...
   var hkey  = util.format ('user:%s:msgbox', userID);
   var skey  = util.format ('user:%s:msg.unread', userID);
-  var msgIdArray = new Array();
 
   redis_cli.smembers (skey, function (err, members) {
     if (err) {
       console.error ('get ' + lkey + ' len error, ' + err);
       return;
     } else {
-      async.each (members, msgId, function(err) {
-        if (err) {
+      async.each (members, function(msgId, error){
+          redis_cli.hget (hkey, msgId, function (err, objstr) {
+            var msg = JSON.parse (objstr);
+            Message.prototype.forward.call(msg);
+          });
+        }, 
+        function(err) {
+          if (err) {
           console.log ('async for ech error ' + err);
           return;
         }
-        redis_cli.hget (hkey, msgId, function (err, objstr) {
-          var msg = JSON.parse (objstr);
-          Message.forward.call(msg);
-        });
       });
     }
   });
