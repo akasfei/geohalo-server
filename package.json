@@ -20,7 +20,8 @@
       "connect-mongo": ">= 0.3.0",
       "redis": ">=0.8.6",
       "ExBuffer": "*",
-      "async": ">=0.2.9"
+      "async": ">=0.2.9",
+      "log4js": "*"
   },
   "engines": {
     "node": ">=0.8.0"

@@ -3,6 +3,7 @@ var redis_cli = require('../lib/RedisDB.js').client;
 var util      = require('util');
 var Packer    = require('../lib/BufferPacker.js');
 var async     = require('async');
+var logger    = require('../lib/SocketLogger.js');
 
 /**
  * Constructor of Message Model. if message is newly
@@ -28,7 +29,7 @@ Message.prototype.forward = function(callback) {
 
   // if toID is offline
   if (socket == undefined) {
-    console.log (this.toID + ' is offline');
+    logger.info('[Message]', this.toID, 'is offline');
     return;
   }
   var buffer = Packer.pack (Packer.S2C_PackType_Msg, this);
@@ -56,7 +57,7 @@ Message.prototype.save = function(msg, callback) {
       multi.sadd (unreadkey, msg.msgId);
       multi.exec (function (err, replies) {
         if (err)
-          return console.log ('insert msg error ' + err);
+          return logger.error('[Message]', 'insert msg error ', err);
         else 
           Message.prototype.forward.call(msg);
       });
@@ -68,9 +69,9 @@ Message.prototype.save = function(msg, callback) {
     multi.sadd (unreadkey, msg.msgId);
     multi.exec (function (err, replies) {
       if (err)
-        return console.error ('save msg failed ' + err);
+        return logger.error('[Message]', 'save msg failed', err);
       else 
-        return console.error ('msg saved ');
+        return logger.info('[Message]', 'msg saved ', JSON.stringify(msg));
     });
   }
 };
@@ -87,7 +88,7 @@ Message.prototype.sendUnreadMsg = function (userID) {
 
   redis_cli.smembers (skey, function (err, members) {
     if (err) {
-      console.error ('get ' + lkey + ' len error, ' + err);
+      logger.error('[Message]','get ' + lkey + ' len error, ', err);
       return;
     } else {
       async.each (members, function(msgId, error){
@@ -98,7 +99,7 @@ Message.prototype.sendUnreadMsg = function (userID) {
         }, 
         function(err) {
           if (err) {
-          console.log ('async for ech error ' + err);
+          logger.error('[Message]', 'async for ech error ' + err);
           return;
         }
       });
@@ -118,7 +119,7 @@ Message.prototype.setRead = function (userId, msgId) {
     if (result) {
       redis_cli.smove(unreadkey, readkey, msgId);
     } else {
-      console.log ('user ' + userId + ' msgId ' + msgId + 'is read');
+      logger.info('[Message]', 'user ' + userId + ' msgId ' + msgId + 'is read');
     }
   });
 }
