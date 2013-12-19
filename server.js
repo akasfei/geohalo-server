@@ -46,6 +46,6 @@ for (var i = 0; i < routes.length; i++) {
   routes[i].register(app);
 }
 
-app.listen(process.env.VCAP_APP_PORT || 80, function(){
-  console.log("[%s]\nSFEI Systems operating on port %d in %s mode. ", new Date(), process.env.VCAP_APP_PORT || 80, app.settings.env);
+app.listen(process.env.VCAP_APP_PORT || 8080, function(){
+  console.log("[%s]\nSFEI Systems operating on port %d in %s mode. ", new Date(), process.env.VCAP_APP_PORT || 8080, app.settings.env);
 });
