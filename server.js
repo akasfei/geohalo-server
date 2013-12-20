@@ -5,7 +5,7 @@
 console.log('[%s]\nSystem started. Initializing system parameters.', new Date()) 
 
 var express = require('express');
-var MongoStore = require('connect-mongo')(express);
+var RedisStore = require('connect-redis')(express);
 var Db = require('./lib/Db.js');
 var FS = require('fs');
 var app = module.exports = express();
@@ -24,9 +24,7 @@ app.configure(function(){
   app.use(express.bodyParser());
   app.use(express.cookieParser());
   app.use(express.session({
-    store: new MongoStore({
-      url: app.db.mongourl
-    }),
+    store: new RedisStore({prefix: "geohalo_session:", db:2}),
     secret: 'geohalo'
   }));
   app.use(express.methodOverride());

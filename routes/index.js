@@ -28,7 +28,7 @@ module.exports = [
       var codehash = hash.update(docs[0].timestamp.toString(), 'utf8').digest('base64');
       if (codehash === docs[0].password){
         req.session.user = new User(docs[0]);
-        return res.send({'ok': true});
+        return res.send({'ok': true, 'sessionid':req.sessionID});
       } else {
         return res.status(403).send({'err': 'Invalid password.'});
       }
